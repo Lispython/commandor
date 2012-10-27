@@ -13,11 +13,12 @@ to you infrastructure
 """
 
 import sys
+import os.path
 from optparse import Option
 
-from .exceptions import InvalidCommand
-from .colors import blue, red
-from .utils import indent
+from commandor.exceptions import InvalidCommand
+from commandor.colors import blue
+from commandor.utils import indent
 
 
 __all__ = 'Command', 'Commandor'
@@ -49,6 +50,12 @@ class Mixin(object):
         """Display input string `s`
         """
         print(s)
+
+    def abort(self, s):
+        """Display and exit
+        """
+        self.display(s)
+        self.exit()
 
 
 class CommandMetaClass(type):
@@ -105,6 +112,7 @@ class Commandor(Mixin):
         self.parser = parser
         self._args = args
         self._options = options
+        self._curdir = None
 
     def add_parser_option(self, option):
         """Add option to parser
@@ -136,6 +144,8 @@ class Commandor(Mixin):
     def process(self):
         """Process parsing
         """
+
+        self._curdir = os.path.abspath(os.path.curdir)
         self._options, self._args = self.parse_args()
 
         if not self._args:
