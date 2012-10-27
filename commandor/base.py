@@ -146,6 +146,7 @@ class Commandor(Mixin):
 
         command, args = self.__class__.find_command(self._args)
         command_instance = command(self.parser, self._args, self._options)
+
         command_instance.run(args)
 
 
@@ -157,7 +158,7 @@ class Commandor(Mixin):
         """
         command = cls
         try:
-            for name in names:
+            for name in names[:]:
                 command = command.lookup_command(name)
                 names.pop(0)
         except InvalidCommand:
