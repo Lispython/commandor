@@ -1,7 +1,7 @@
 Welcome to Commandor's documentation!
-=============================================
+=====================================
 
-Collections of Megic Recipes for Fabric
+Helpers for command line arguments parser
 
 .. image:: https://secure.travis-ci.org/Lispython/commandor.png
 	   :target: https://secure.travis-ci.org/Lispython/commandor

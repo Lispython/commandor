@@ -16,7 +16,7 @@ shell:
 audit:
 	python setup.py autdit
 
-release:
+release: clean
 	python setup.py sdist upload
 
 clean-pyc:

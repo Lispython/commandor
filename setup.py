@@ -10,6 +10,7 @@ configuration management to your entire infrastructure.
 
 :copyright: (c) 2012 by Alexandr Lispython (alex@obout.ru).
 :license: BSD, see LICENSE for more details.
+:github: http://github.com/Lispython/commandor
 """
 
 import os
@@ -24,7 +25,7 @@ except Exception, e:
     print(e)
     readme_content = __doc__
 
-VERSION = "0.0.1"
+VERSION = "0.0.2"
 
 py_ver = sys.version_info
 
