@@ -27,3 +27,8 @@ VERSION_INFO = __version_info__
 
 
 from base import Commandor, Command
+import colors
+
+assert Commandor
+assert Command
+assert colors
