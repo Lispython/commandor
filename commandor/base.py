@@ -156,8 +156,7 @@ class Commandor(Mixin):
 
         command, args = self.__class__.find_command(self._args)
         command_instance = command(self.parser, self._args, self._options)
-
-        command_instance.run(args)
+        command_instance.run(self._curdir, *args)
 
 
     @classmethod
