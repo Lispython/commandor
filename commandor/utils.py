@@ -40,6 +40,6 @@ def parse_args(args):
             break
 
     if not index:
-        return (args, None)
+        return (args, [])
 
     return (args[:index], args[index:])

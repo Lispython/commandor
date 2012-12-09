@@ -177,3 +177,24 @@ class CoreTestCase(BaseTestCase):
         commandor = Commandor1(parser, args=commandor_args,
                                options=commandor_options)
         self.assertEquals(commandor.process(), False)
+
+
+        commandor_args = []
+
+        parser = OptionParser(
+            usage="%prog [options] <commands>",
+            add_help_option=False)
+
+
+        class Commandor2(Commandor):
+            """Custom commandor2
+            """
+
+            def run(self, options, args):
+                return False
+
+        commandor = Commandor2(parser, args=commandor_args,
+                               options=commandor_options)
+
+        self.assertEquals(commandor.process(), False)
+

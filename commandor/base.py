@@ -116,7 +116,7 @@ class Commandor(Mixin):
         :param options: list of additional :class:`~optparse.Option` objects
         """
         self.parser = parser
-        self._args = args
+        self._args = args or sys.argv[1:]
         self._options = options
         self._curdir = None
 
@@ -151,13 +151,14 @@ class Commandor(Mixin):
         :returns: return True for continue
         """
 
-        if options.list_commands():
+        if options.list_commands:
             self.show_commands()
 
-        if not any([arg for arg in args if not arg.startswith('-')]):
+        if isinstance(args, (list, tuple)) and\
+               not any([arg for arg in args if not arg.startswith('-')]):
             self.parser.print_help()
 
-        return True
+        return False
 
     def process(self):
         """Process parsing
