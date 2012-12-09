@@ -25,7 +25,7 @@ except Exception, e:
     print(e)
     readme_content = __doc__
 
-VERSION = "0.0.6"
+VERSION = "0.0.7"
 
 py_ver = sys.version_info
 
