@@ -111,7 +111,7 @@ class Commandor(Mixin):
                               default=False,
                               help='Show commands')]
 
-    def __init__(self, parser, args=[], options=[]):
+    def __init__(self, parser, args=sys.argv[1:], options=[]):
         """Initialize commandor
 
         :param parser: :class:`~optparse.OptionParse` object
@@ -119,7 +119,7 @@ class Commandor(Mixin):
         :param options: list of additional :class:`~optparse.Option` objects
         """
         self.parser = parser
-        self._args = args or sys.argv[1:]
+        self._args = args
         self._options = options
         self._curdir = None
 
