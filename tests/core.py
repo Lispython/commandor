@@ -109,7 +109,7 @@ class CoreTestCase(BaseTestCase):
                 else:
                     test_self.assertEquals(options.config, "./config.py")
                 self.test_commandor = True
-                return "commandor_name"
+                return {"param": "value1"}
 
         class Server(Command):
             """Command description
@@ -119,6 +119,7 @@ class CoreTestCase(BaseTestCase):
 
             def run(self, options, args):
                 test_self.assertFalse(self.test_server)
+                test_self.assertEquals(self._commandor_res['param'], "value1")
                 return "server_name"
 
         class Start(Command):
@@ -130,6 +131,7 @@ class CoreTestCase(BaseTestCase):
                 test_self.assertTrue(verbose)
                 test_self.assertEquals(processes, 10)
                 test_self.assertFalse(self.test_start)
+                test_self.assertEquals(self._commandor_res['param'], "value1")
                 return "start_name"
 
         parser = OptionParser(

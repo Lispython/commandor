@@ -177,7 +177,7 @@ class Commandor(Mixin):
             return res
 
         command, args = self.__class__.find_command(commands_args)
-        command_instance = command(cur_dir=self._curdir, args=args)
+        command_instance = command(cur_dir=self._curdir, args=args, commandor_res=res)
         return command_instance.process()
 
     @classmethod
@@ -240,10 +240,11 @@ class Command(Mixin):
 
     help = None
 
-    def __init__(self, parser=None, args=[], cur_dir=None):
+    def __init__(self, parser=None, args=[], cur_dir=None, commandor_res=None):
         self._args = args
         self.parser = parser
         self._cur_dir = cur_dir
+        self._commandor_res = commandor_res
 
     def initialize_parser(self):
         """Create :class:`optparse.OptionParse`
