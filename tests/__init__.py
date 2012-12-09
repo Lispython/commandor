@@ -13,7 +13,7 @@ tests
 
 import unittest
 
-from .core import CoreTestCase
+from core import CoreTestCase
 
 
 def suite():

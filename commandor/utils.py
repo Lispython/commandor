@@ -11,7 +11,8 @@ Commandor helpers
 :github: http://github.com/Lispython/commandor
 """
 
-__all__ = 'indent',
+__all__ = 'indent', 'parse_args'
+
 
 def indent(s, level=4):
     """Add indentation for string
@@ -22,3 +23,23 @@ def indent(s, level=4):
     :rtype: string
     """
     return u" " * level + s
+
+
+def parse_args(args):
+    """Separate script and command args
+
+    :param args: script args
+    :return: tuple(['script args'],['command', 'names', 'and commands args'])
+    """
+
+    index = None
+
+    for i, arg in enumerate(args):
+        if not arg.startswith('-'):
+            index = i
+            break
+
+    if not index:
+        return (args, None)
+
+    return (args[:index], args[index:])

@@ -25,7 +25,7 @@ except Exception, e:
     print(e)
     readme_content = __doc__
 
-VERSION = "0.0.5"
+VERSION = "0.0.6"
 
 py_ver = sys.version_info
 
@@ -54,7 +54,7 @@ if not (is_py3 or (is_py2 and py_ver[1] >= 7)):
 setup(
     name="commandor",
     version=VERSION,
-    description="Simple wrapper to parse script options and args",
+    description="Simple wrapper to parse nested script options and args",
     long_description=readme_content,
     author="Alex Lispython",
     author_email="alex@obout.ru",
@@ -69,8 +69,8 @@ setup(
     platforms = ['Linux', 'Mac', 'Windows'],
     classifiers=[
          ## "Development Status :: 1 - Planning",
-        "Development Status :: 2 - Pre-Alpha",
-        ## "Development Status :: 3 - Alpha",
+        #"Development Status :: 2 - Pre-Alpha",
+        "Development Status :: 3 - Alpha",
         ## "Development Status :: 4 - Beta",
         ## "Development Status :: 5 - Production/Stable",
         "Environment :: Console",

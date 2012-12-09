@@ -14,11 +14,11 @@ to you infrastructure
 
 import sys
 import os.path
-from optparse import Option
+from optparse import Option, OptionParser
 
 from commandor.exceptions import InvalidCommand
 from commandor.colors import blue
-from commandor.utils import indent
+from commandor.utils import indent, parse_args
 
 
 __all__ = 'Command', 'Commandor'
@@ -105,14 +105,29 @@ class Commandor(Mixin):
     initialized_commands = {}
     default_options = [Option('-L', '--list-commands',
                               action='store_true',
-                              default = False,
+                              default=False,
                               help='Show commands')]
 
-    def __init__(self, parser, args=None, options=None):
+    def __init__(self, parser, args=[], options=[]):
+        """Initialize commandor
+
+        :param parser: :class:`~optparse.OptionParse` object
+        :param args: list or script arguments
+        :param options: list of additional :class:`~optparse.Option` objects
+        """
         self.parser = parser
         self._args = args
         self._options = options
         self._curdir = None
+
+        # Options after args_parse
+        self._parsed_options = None
+
+    def add_parser_options(self):
+        """Add options to parser
+        """
+        for option in self.default_options + self._options:
+            self.add_parser_option(option)
 
     def add_parser_option(self, option):
         """Add option to parser
@@ -121,49 +136,55 @@ class Commandor(Mixin):
         """
         self.parser.add_option(option)
 
-    @property
-    def args(self):
-        """Parsed args property
-        """
-        return self._args
-
-    @property
-    def options(self):
-        """Parsed optios property
-        """
-        return self._options
-
-    def parse_args(self):
+    def parse_args(self, args=[]):
         """Parser args and options from parser
+        :param args: script args, exclude commands and commands args
+        :return: tuple of options and empty args
         """
-        for option in self.default_options:
-            self.add_parser_option(option)
+        return self.parser.parse_args(args or self._args)
 
-        return self.parser.parse_args()
+    def run(self, options, args):
+        """Execute
+
+        :param options: commandor options
+        :param args: list of commandor args
+        :returns: return True for continue
+        """
+
+        if options.list_commands():
+            self.show_commands()
+
+        if not any([arg for arg in args if not arg.startswith('-')]):
+            self.parser.print_help()
+
+        return True
 
     def process(self):
         """Process parsing
         """
+        args, commands_args = parse_args(self._args)
 
         self._curdir = os.path.abspath(os.path.curdir)
-        self._options, self._args = self.parse_args()
 
-        if not self._args:
-            self.parser.print_help()
+        self.add_parser_options()
 
-        if self._options.list_commands:
-            self.show_commands()
+        self._parsed_options, _ = self.parse_args(args)
 
-        command, args = self.__class__.find_command(self._args)
-        command_instance = command(self.parser, self._args, self._options)
-        command_instance.run(self._curdir, *args)
+        res = self.run(self._parsed_options, commands_args)
 
+        if not res:
+            return res
+
+        command, args = self.__class__.find_command(commands_args)
+        command_instance = command(cur_dir=self._curdir, args=args)
+        return command_instance.process()
 
     @classmethod
     def find_command(cls, names):
         """Find command from commands tree
 
-        :param name:
+        :param cls:
+        :param names:
         """
         command = cls
         try:
@@ -174,7 +195,6 @@ class Commandor(Mixin):
             # Parse arguments
             pass
         return command, names
-
 
     def show_commands(self):
         """Show registered commands
@@ -219,16 +239,32 @@ class Command(Mixin):
 
     help = None
 
-    def __init__(self, parser, args=[], options={}):
+    def __init__(self, parser=None, args=[], cur_dir=None):
         self._args = args
-        self._options = options
         self.parser = parser
+        self._cur_dir = cur_dir
+
+    def initialize_parser(self):
+        """Create :class:`optparse.OptionParse`
+        """
+        if not self.parser:
+            self.parser = OptionParser(
+                usage="{0} [options]".format(self.__class__.__name__),
+                add_help_option=False)
+
+    def register_option(self, option):
+        """Register :class:`optparse.Option` in `self.parser`
+
+        :param option: :class:`optparse.Option` object
+        """
+        self.parser.add_option(option)
 
     def register_options(self):
         """Add specifed command options
         to Options Group
         """
-        pass
+        for option in self.options:
+            self.register_option(option)
 
     @classmethod
     def print_commands(cls, options, args):
@@ -250,7 +286,7 @@ class Command(Mixin):
         command.show(options, args)
 
     @classmethod
-    def show(cls, options={}, args=[]):
+    def show(cls, options=[], args=[]):
         """Show command repr
 
         :param cls: cls object
@@ -258,8 +294,9 @@ class Command(Mixin):
         :param args: parsed args
         """
         # Self.Display cls doc
-        cls.display(indent("`{}`: {}".format(
-            blue(cls.name), cls.help or cls.__doc__.strip()), (cls.level + 1) * 4))
+        cls.display(indent("`{0}`: {1}".format(
+            blue(cls.name), cls.help or cls.__doc__.strip()),
+                           (cls.level + 1) * 4))
 
         if cls.commands:
             cls.print_commands(options, args)
@@ -274,10 +311,33 @@ class Command(Mixin):
         cls.commands[command.name] = command
         return True
 
+    def configure(self):
+        """Configure command before execute
+        """
+        self.initialize_parser()
+
+        self.register_options()
+
+    def parse_args(self):
+        """Parse arguments
+        :return: tuple of options and args
+        """
+        return self.parser.parse_args(self._args)
+
+    def process(self):
+        """Execute command
+        """
+        self.configure()
+
+        options, args = self.parse_args()
+        d = dict([(x.dest, getattr(options, x.dest, None))
+                  for x in self.parser.option_list])
+        return self.run(**d)
+
     def run(self, *args, **kwargs):
         """Command run loop
 
         :param \*args: custom args
         :param \*\*: custom kwargs
         """
-        raise NotImplementedError, "Add command logic"
+        raise NotImplementedError("Add command logic")

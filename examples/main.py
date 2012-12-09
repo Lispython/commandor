@@ -77,6 +77,8 @@ class ClusterInfo(Command):
 def main():
     """Main execution loop
     """
+
+    import ipdb; ipdb.set_trace()
     parser = OptionParser(
         usage="%prog [options] <commands>",
         add_help_option=False)
@@ -91,7 +93,5 @@ def main():
     manager.process()
 
 
-
 if __name__ == '__main__':
     main()
-
