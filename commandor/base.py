@@ -17,7 +17,7 @@ import os.path
 from optparse import Option, OptionParser
 
 from commandor.exceptions import InvalidCommand
-from commandor.colors import blue
+from commandor.colors import blue, red
 from commandor.utils import indent, parse_args
 
 
@@ -50,6 +50,9 @@ class Mixin(object):
         """Display input string `s`
         """
         print(s)
+
+    def error(self, s):
+        self.display(red(s))
 
     def abort(self, s):
         """Display and exit
