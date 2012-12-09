@@ -152,7 +152,8 @@ class Commandor(Mixin):
         """
 
         if options.list_commands:
-            self.show_commands()
+            self.parser.print_help()
+            self.show_commands(args)
 
         if isinstance(args, (list, tuple)) and\
                not any([arg for arg in args if not arg.startswith('-')]):
@@ -177,14 +178,15 @@ class Commandor(Mixin):
             return res
 
         command, args = self.__class__.find_command(commands_args)
-        command_instance = command(cur_dir=self._curdir, args=args, commandor_res=res)
+        command_instance = command(cur_dir=self._curdir,
+                                   args=args, commandor_res=res)
         return command_instance.process()
 
     @classmethod
     def find_command(cls, names):
         """Find command from commands tree
 
-        :param cls:
+        :pa options={},ram cls:
         :param names:
         """
         command = cls
@@ -197,20 +199,23 @@ class Commandor(Mixin):
             pass
         return command, names
 
-    def show_commands(self):
+    def show_commands(self, args):
         """Show registered commands
+
+        :param args: list of command params
         """
+
         command = self
-        if self._args:
-            command, names = self.__class__.find_command(self._args)
+        if args:
+            command, names = self.__class__.find_command(args)
             self.display("Subcommands list for {}".format('.'.join(names)))
-            command.show(self._options, self._args)
+            command.show(args)
             self.exit()
 
         self.display("\nCommands list:")
 
         for command in self.commands.values():
-            command.show(self._options, self._args)
+            command.show(args)
         self.exit()
 
     @classmethod
@@ -269,26 +274,26 @@ class Command(Mixin):
             self.register_option(option)
 
     @classmethod
-    def print_commands(cls, options, args):
+    def print_commands(cls, args):
         """Display command commands
 
         :param options: options dict
         :param args: script arguments
         """
         for name, command in cls.commands.items():
-            cls.print_command(name, options, args)
+            cls.print_command(name, args)
 
     @classmethod
-    def print_command(cls, name, options={}, args=[]):
+    def print_command(cls, name, args=[]):
         """Pretty print command
 
         :param name: command name
         """
         command = cls.lookup_command(name)
-        command.show(options, args)
+        command.show(args)
 
     @classmethod
-    def show(cls, options=[], args=[]):
+    def show(cls, args=[]):
         """Show command repr
 
         :param cls: cls object
@@ -301,7 +306,7 @@ class Command(Mixin):
                            (cls.level + 1) * 4))
 
         if cls.commands:
-            cls.print_commands(options, args)
+            cls.print_commands(args)
 
     @classmethod
     def add_command(cls, command):
