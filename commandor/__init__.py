@@ -17,8 +17,8 @@ __all__ = 'VERSION', 'VERSION_INFO',\
 
 __author__ = "Alex Lispython (alex@obout.ru)"
 __license__ = "BSD, see LICENSE for more details"
-__version_info__ = (0, 1, 0)
-__build__ = 0x000010
+__version_info__ = (0, 1, 1)
+__build__ = 0x000011
 __version__ = ".".join(map(str, __version_info__))
 __maintainer__ = "Alexandr Lispython (alex@obout.ru)"
 

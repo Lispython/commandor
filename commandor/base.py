@@ -181,8 +181,15 @@ class Commandor(Mixin):
             return res
 
         command, args = self.__class__.find_command(commands_args)
-        command_instance = command(cur_dir=self._curdir,
-                                   args=args, commandor_res=res)
+
+
+        if issubclass(command, Commandor):
+            self.parser.print_help()
+            self.show_commands(args)
+            self.exit()
+        else:
+            command_instance = command(cur_dir=self._curdir,
+                                       args=args, commandor_res=res)
         return command_instance.process()
 
     @classmethod
@@ -207,12 +214,10 @@ class Commandor(Mixin):
 
         :param args: list of command params
         """
-
         command = self
         if args:
             command, names = self.__class__.find_command(args)
             self.display("Subcommands list for {}".format('.'.join(names)))
-            command.show(args)
             self.exit()
 
         self.display("\nCommands list:")
