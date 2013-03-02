@@ -39,7 +39,7 @@ def parse_args(args):
             index = i
             break
 
-    if not index:
+    if index is None:
         return (args, [])
 
     return (args[:index], args[index:])

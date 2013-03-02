@@ -196,7 +196,7 @@ class Commandor(Mixin):
     def find_command(cls, names):
         """Find command from commands tree
 
-        :pa options={},ram cls:
+        :pa options={}, ram cls:
         :param names:
         """
         command = cls

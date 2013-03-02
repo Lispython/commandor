@@ -17,10 +17,19 @@ __all__ = 'VERSION', 'VERSION_INFO',\
 
 __author__ = "Alex Lispython (alex@obout.ru)"
 __license__ = "BSD, see LICENSE for more details"
-__version_info__ = (0, 1, 1)
-__build__ = 0x000011
-__version__ = ".".join(map(str, __version_info__))
+__build__ = 0x000012
 __maintainer__ = "Alexandr Lispython (alex@obout.ru)"
+
+try:
+    __version__ = __import__('pkg_resources') \
+        .get_distribution('human_curl').version
+except Exception, e:
+    __version__ = 'unknown'
+
+if __version__ == 'unknown':
+    __version_info__ = (0, 0, 0)
+else:
+    __version_info__ = __version__.split('.')
 
 VERSION = __version__
 VERSION_INFO = __version_info__
