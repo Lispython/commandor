@@ -14,14 +14,29 @@ to you infrastructure
 
 import sys
 import os.path
-from optparse import Option, OptionParser
+from optparse import Option, OptionParser as BaseOptionParser
 
-from commandor.exceptions import InvalidCommand
+from commandor.exceptions import (InvalidCommand,
+                                  InvalidScriptOption, InvalidCommandOption)
 from commandor.colors import blue, red
 from commandor.utils import indent, parse_args
 
 
-__all__ = 'Command', 'Commandor'
+__all__ = 'Command', 'Commandor', 'OptionParser'
+
+class OptionParser(BaseOptionParser):
+    def exit(self, status=0, msg=None):
+        sys.exit(status=0)
+
+    def format_help(self, formatter=None):
+        if formatter is None:
+            formatter = self.formatter
+        result = []
+        if self.description:
+            result.append(self.format_description(formatter) + "\n")
+        result.append(self.format_option_help(formatter))
+        result.append(self.format_epilog(formatter))
+        return "".join(result)
 
 
 class Mixin(object):
@@ -39,20 +54,23 @@ class Mixin(object):
         return cls.commands[name]
 
     @staticmethod
-    def exit():
+    def exit(status=0):
         """Exit
         """
-        print("Exit from loop")
-        sys.exit(0)
+        sys.exit(status)
 
     @staticmethod
-    def display(s):
+    def display(s, c=None):
         """Display input string `s`
         """
-        print(s)
+        if c:
+            # Display colorized
+            print(c(s))
+        else:
+            print(s)
 
     def error(self, s):
-        self.display(red(s))
+        self.display(s, red)
 
     def abort(self, s):
         """Display and exit
@@ -78,6 +96,10 @@ class CommandMetaClass(type):
                 cls.name = name.lower()
             cls.parent.add_command(cls)
             cls.level = cls.parent.level + 1
+            if cls.parent.tree:
+                cls.tree = cls.parent.tree + [cls.parent]
+            else:
+                cls.tree = [cls.parent]
         else:
             cls.name = name.lower()
 
@@ -109,7 +131,11 @@ class Commandor(Mixin):
     default_options = [Option('-L', '--list-commands',
                               action='store_true',
                               default=False,
-                              help='Show commands')]
+                              help='Show commands'),
+                       Option('-h', '--help',
+                              action='store_true',
+                              default=False,
+                              help='Show help for script')]
 
     def __init__(self, parser, args=sys.argv[1:], options=[]):
         """Initialize commandor
@@ -144,9 +170,12 @@ class Commandor(Mixin):
         :param args: script args, exclude commands and commands args
         :return: tuple of options and empty args
         """
-        return self.parser.parse_args(args or self._args)
+        try:
+            return self.parser.parse_args(args)
+        except SystemExit, e:
+            raise InvalidScriptOption(e)
 
-    def run(self, options, args):
+    def run(self, options, args, **kwargs):
         """Execute
 
         :param options: commandor options
@@ -157,39 +186,45 @@ class Commandor(Mixin):
         if options.list_commands:
             self.parser.print_help()
             self.show_commands(args)
+            # System exit
 
-        if isinstance(args, (list, tuple)) and\
-               not any([arg for arg in args if not arg.startswith('-')]):
-            self.parser.print_help()
+        ## if isinstance(args, (list, tuple)) and \
+        ##        not any([arg for arg in args if not arg.startswith('-')]):
+        ##     self.parser.print_help()
 
-        return False
+        return True
 
     def process(self):
         """Process parsing
         """
-        args, commands_args = parse_args(self._args)
+
+        # Configure self.parser options
+        self.add_parser_options()
+
+        commandor_args, commands = parse_args(self._args)
 
         self._curdir = os.path.abspath(os.path.curdir)
 
-        self.add_parser_options()
 
-        self._parsed_options, _ = self.parse_args(args)
+        # Commandor parsed options and args (that empty list)
+        # Because all args separated into commands_args
+        self._parsed_options, _ = self.parse_args(commandor_args)
 
-        res = self.run(self._parsed_options, commands_args)
+        res = self.run(self._parsed_options, commands)
 
         if not res:
             return res
 
-        command, args = self.__class__.find_command(commands_args)
-
+        command, command_args = self.__class__.find_command(commands)
 
         if issubclass(command, Commandor):
+            # if subcommands not specified, show help and exit
             self.parser.print_help()
-            self.show_commands(args)
+            self.show_commands(commands)
             self.exit()
         else:
             command_instance = command(cur_dir=self._curdir,
-                                       args=args, commandor_res=res)
+                                       args=command_args, commandor_res=res)
         return command_instance.process()
 
     @classmethod
@@ -217,7 +252,7 @@ class Commandor(Mixin):
         command = self
         if args:
             command, names = self.__class__.find_command(args)
-            self.display("Subcommands list for {}".format('.'.join(names)))
+            self.display("Subcommands list for {0}".format('.'.join(names)))
             self.exit()
 
         self.display("\nCommands list:")
@@ -246,10 +281,16 @@ class Command(Mixin):
 
     __metaclass__ = CommandMetaClass
 
+    tree = []
     level = 0
     parent = None
     name = 'command'
     options = []
+    default_options = [
+        Option(None, '--help',
+               action='store_true',
+               default=False,
+               help='Show help for command')]
 
     help = None
 
@@ -278,30 +319,50 @@ class Command(Mixin):
         """Add specifed command options
         to Options Group
         """
-        for option in self.options:
+        for option in self.default_options + self.options:
             self.register_option(option)
 
     @classmethod
-    def print_commands(cls, args):
+    def print_commands(cls, args, base_ident=None):
         """Display command commands
 
         :param options: options dict
         :param args: script arguments
         """
         for name, command in cls.commands.items():
-            cls.print_command(name, args)
+            cls.print_command(name, args, base_ident)
 
     @classmethod
-    def print_command(cls, name, args=[]):
+    def print_command(cls, name, args=[], base_ident=None):
         """Pretty print command
 
         :param name: command name
         """
         command = cls.lookup_command(name)
-        command.show(args)
+        command.show(args, base_ident)
+
+
+    def print_command_help(self):
+        """Print command help and exit
+        """
+        self.display(self.__class__.usage())
+        self.display(self.parser.format_help())
+
+        # Display subcommands if exists
+        if self.commands:
+            self.display("Subcommands list for {0}".format(self.name))
+            self.__class__.print_commands([], base_ident=1)
 
     @classmethod
-    def show(cls, args=[]):
+    def usage(cls):
+        """Print command usage
+        """
+        return u"Usage: {0} [options] {1}\n".format(
+            sys.argv[0], ' '.join([x.name for x in cls.tree] + [cls.name]))
+
+
+    @classmethod
+    def show(cls, args=[], base_ident=None):
         """Show command repr
 
         :param cls: cls object
@@ -311,10 +372,10 @@ class Command(Mixin):
         # Self.Display cls doc
         cls.display(indent("`{0}`: {1}".format(
             blue(cls.name), cls.help or cls.__doc__.strip()),
-                           (cls.level + 1) * 4))
+                           (cls.level + 1 if base_ident is None else base_ident) * 4))
 
         if cls.commands:
-            cls.print_commands(args)
+            cls.print_commands(args, base_ident if base_ident is None else base_ident + 1 )
 
     @classmethod
     def add_command(cls, command):
@@ -337,7 +398,10 @@ class Command(Mixin):
         """Parse arguments
         :return: tuple of options and args
         """
-        return self.parser.parse_args(self._args)
+        try:
+            return self.parser.parse_args(self._args)
+        except SystemExit, e:
+            raise InvalidCommandOption(e)
 
     def process(self):
         """Execute command
@@ -347,6 +411,11 @@ class Command(Mixin):
         options, args = self.parse_args()
         d = dict([(x.dest, getattr(options, x.dest, None))
                   for x in self.parser.option_list])
+        if options.help:
+            self.print_command_help()
+            self.exit()
+        del d["help"]
+
         return self.run(**d)
 
     def run(self, *args, **kwargs):

@@ -25,7 +25,7 @@ clean-pyc:
 	find . -name '*~' -exec rm -f {} +
 
 clean: clean-pyc
-	find . -name '*.egg' -exec rm -f {} +
+	find . -name '*.egg' -exec rm -rf {} +
 	find . -name '*.egg-info' -exec rm -rf {} +
 
 find-print:

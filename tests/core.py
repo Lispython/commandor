@@ -15,6 +15,7 @@ from optparse import OptionParser, Option
 from base import BaseTestCase
 from commandor.base import Commandor, Command
 from commandor.utils import parse_args
+from commandor.exceptions import InvalidScriptOption
 
 
 __all__ = 'CoreTestCase',
@@ -26,8 +27,13 @@ class CoreTestCase(BaseTestCase):
 
     def test_parse_args(self):
         args = "--config=./config.py server start --verbose --processes=8".split()
-
         self.assertEquals(parse_args(args), (args[:1], args[1:]))
+
+        args = "server start --verbose --processes=8".split()
+        self.assertEquals(parse_args(args), ([], args))
+
+        args = "server --type=http start --verbose --processes=8".split()
+        self.assertEquals(parse_args(args), ([], args))
 
     def test_command(self):
         test_self = self
@@ -143,11 +149,15 @@ class CoreTestCase(BaseTestCase):
                                     help='Commandor configuration file')]
 
         commandor_args = "--config=./config.py server start --verbose --processes=10".split()
-
         commandor = Commandor1(parser, args=commandor_args, options=commandor_options)
+
+        self.assertEquals(parse_args(commandor._args), (commandor_args[:1], commandor_args[1:]))
 
         commandor.add_parser_options()
         parsed_options, parsed_args = commandor.parse_args(["--config=./config.py"])
+
+        self.assertRaises(InvalidScriptOption, commandor.parse_args, ["--dddd=true"])
+
 
         self.assertEquals(parsed_options.config, "./config.py")
         self.assertEquals(parsed_args, [])

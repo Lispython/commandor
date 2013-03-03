@@ -14,3 +14,11 @@ Commandor library exceptions
 class InvalidCommand(Exception):
     """Invalid console command
     """
+
+class InvalidScriptOption(Exception):
+    """Invalid script option
+    """
+
+class InvalidCommandOption(Exception):
+    """InvalidCommandOption
+    """
