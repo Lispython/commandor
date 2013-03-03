@@ -26,7 +26,7 @@ __all__ = 'Command', 'Commandor', 'OptionParser'
 
 class OptionParser(BaseOptionParser):
     def exit(self, status=0, msg=None):
-        sys.exit(status=0)
+        sys.exit(status)
 
     def format_help(self, formatter=None):
         if formatter is None:
