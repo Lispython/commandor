@@ -3,8 +3,8 @@ Welcome to Commandor's documentation!
 
 Helpers for command line arguments parser
 
-.. image:: https://secure.travis-ci.org/Lispython/commandor.png
-	   :target: https://secure.travis-ci.org/Lispython/commandor
+.. image::  https://travis-ci.org/Lispython/commandor.png?branch=master
+	   :target: https://travis-ci.org/Lispython/commandor
 
 
 Overview
