@@ -12,10 +12,11 @@ Test core utilities
 """
 
 from optparse import OptionParser, Option
-from base import BaseTestCase
 from commandor.base import Commandor, Command
 from commandor.utils import parse_args
 from commandor.exceptions import InvalidScriptOption
+
+from .base import BaseTestCase
 
 
 __all__ = 'CoreTestCase',
@@ -27,13 +28,13 @@ class CoreTestCase(BaseTestCase):
 
     def test_parse_args(self):
         args = "--config=./config.py server start --verbose --processes=8".split()
-        self.assertEquals(parse_args(args), (args[:1], args[1:]))
+        self.assertEqual(parse_args(args), (args[:1], args[1:]))
 
         args = "server start --verbose --processes=8".split()
-        self.assertEquals(parse_args(args), ([], args))
+        self.assertEqual(parse_args(args), ([], args))
 
         args = "server --type=http start --verbose --processes=8".split()
-        self.assertEquals(parse_args(args), ([], args))
+        self.assertEqual(parse_args(args), ([], args))
 
     def test_command(self):
         test_self = self
@@ -65,7 +66,7 @@ class CoreTestCase(BaseTestCase):
 
             def run(self, verbose, procss):
                 test_self.assertTrue(verbose)
-                test_self.assertEquals(procss, 9)
+                test_self.assertEqual(procss, 9)
 
         parser = OptionParser(
             usage="%prog [options] <commands>",
@@ -74,15 +75,15 @@ class CoreTestCase(BaseTestCase):
         args = "--verbose --processes=8".split()
 
         command_instance = Server(parser, args)
-        self.assertEquals(command_instance.parser, parser)
+        self.assertEqual(command_instance.parser, parser)
 
         self.assertRaises(NotImplementedError, command_instance.process)
 
         parsed_options, parsed_args = command_instance.parse_args()
 
-        self.assertEquals(parsed_args, [])
-        self.assertEquals(parsed_options.procss, 8)
-        self.assertEquals(parsed_options.verbose, True)
+        self.assertEqual(parsed_args, [])
+        self.assertEqual(parsed_options.procss, 8)
+        self.assertEqual(parsed_options.verbose, True)
 
         parser = OptionParser(
             usage="%prog [options] <commands>",
@@ -113,7 +114,7 @@ class CoreTestCase(BaseTestCase):
                 if options.config == './config_exit.py':
                     return False
                 else:
-                    test_self.assertEquals(options.config, "./config.py")
+                    test_self.assertEqual(options.config, "./config.py")
                 self.test_commandor = True
                 return {"param": "value1"}
 
@@ -125,7 +126,7 @@ class CoreTestCase(BaseTestCase):
 
             def run(self, options, args):
                 test_self.assertFalse(self.test_server)
-                test_self.assertEquals(self._commandor_res['param'], "value1")
+                test_self.assertEqual(self._commandor_res['param'], "value1")
                 return "server_name"
 
         class Start(Command):
@@ -135,9 +136,9 @@ class CoreTestCase(BaseTestCase):
 
             def run(self, verbose, processes):
                 test_self.assertTrue(verbose)
-                test_self.assertEquals(processes, 10)
+                test_self.assertEqual(processes, 10)
                 test_self.assertFalse(self.test_start)
-                test_self.assertEquals(self._commandor_res['param'], "value1")
+                test_self.assertEqual(self._commandor_res['param'], "value1")
                 return "start_name"
 
         parser = OptionParser(
@@ -151,7 +152,7 @@ class CoreTestCase(BaseTestCase):
         commandor_args = "--config=./config.py server start --verbose --processes=10".split()
         commandor = Commandor1(parser, args=commandor_args, options=commandor_options)
 
-        self.assertEquals(parse_args(commandor._args), (commandor_args[:1], commandor_args[1:]))
+        self.assertEqual(parse_args(commandor._args), (commandor_args[:1], commandor_args[1:]))
 
         commandor.add_parser_options()
         parsed_options, parsed_args = commandor.parse_args(["--config=./config.py"])
@@ -159,16 +160,16 @@ class CoreTestCase(BaseTestCase):
         self.assertRaises(InvalidScriptOption, commandor.parse_args, ["--dddd=true"])
 
 
-        self.assertEquals(parsed_options.config, "./config.py")
-        self.assertEquals(parsed_args, [])
+        self.assertEqual(parsed_options.config, "./config.py")
+        self.assertEqual(parsed_args, [])
 
         command, args = commandor.__class__.find_command(['sserver'])
-        self.assertEquals(command, commandor.__class__)
-        self.assertEquals(args, ['sserver'])
+        self.assertEqual(command, commandor.__class__)
+        self.assertEqual(args, ['sserver'])
 
         command, args = commandor.__class__.find_command(['server'])
-        self.assertEquals(command, Server)
-        self.assertEquals(args, [])
+        self.assertEqual(command, Server)
+        self.assertEqual(args, [])
 
         parser = OptionParser(
             usage="%prog [options] <commands>",
@@ -177,7 +178,7 @@ class CoreTestCase(BaseTestCase):
         commandor = Commandor1(parser, args=commandor_args,
                                options=commandor_options)
 
-        self.assertEquals(commandor.process(), "start_name")
+        self.assertEqual(commandor.process(), "start_name")
 
         # Test commandor run
         commandor_args = "--config=./config_exit.py".split()
@@ -188,7 +189,7 @@ class CoreTestCase(BaseTestCase):
 
         commandor = Commandor1(parser, args=commandor_args,
                                options=commandor_options)
-        self.assertEquals(commandor.process(), False)
+        self.assertEqual(commandor.process(), False)
 
 
         commandor_args = []
@@ -208,5 +209,5 @@ class CoreTestCase(BaseTestCase):
         commandor = Commandor2(parser, args=commandor_args,
                                options=commandor_options)
 
-        self.assertEquals(commandor.process(), False)
+        self.assertEqual(commandor.process(), False)
 

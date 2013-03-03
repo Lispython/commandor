@@ -11,6 +11,8 @@ Python script options and args parser
 :github: http://github.com/Lispython/commandor
 """
 
+import sys
+
 __all__ = 'VERSION', 'VERSION_INFO',\
           'Commandor', 'Command'
 
@@ -23,7 +25,7 @@ __maintainer__ = "Alexandr Lispython (alex@obout.ru)"
 try:
     __version__ = __import__('pkg_resources') \
         .get_distribution('human_curl').version
-except Exception, e:
+except Exception:
     __version__ = 'unknown'
 
 if __version__ == 'unknown':
@@ -35,9 +37,6 @@ VERSION = __version__
 VERSION_INFO = __version_info__
 
 
-from base import Commandor, Command
-import colors
+from commandor.base import Commandor, Command
+from commandor import colors
 
-assert Commandor
-assert Command
-assert colors

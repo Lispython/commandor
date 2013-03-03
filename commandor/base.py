@@ -20,6 +20,7 @@ from commandor.exceptions import (InvalidCommand,
                                   InvalidScriptOption, InvalidCommandOption)
 from commandor.colors import blue, red
 from commandor.utils import indent, parse_args
+from commandor.compat import with_metaclass
 
 
 __all__ = 'Command', 'Commandor', 'OptionParser'
@@ -86,6 +87,8 @@ class CommandMetaClass(type):
         cls = super(CommandMetaClass, mcs).__new__(mcs, name, bases, params)
 
         # Re init commands property
+        if cls.__name__ == "NewBase":
+            return cls
 
         cls.commands = {}
 
@@ -108,6 +111,8 @@ class CommandMetaClass(type):
 
         return cls
 
+CommandBase = with_metaclass(CommandMetaClass)
+
 
 class CommandorMetaClass(type):
     """Commandor Meta class
@@ -121,8 +126,9 @@ class CommandorMetaClass(type):
         cls.commands = {}
         return cls
 
+CommandorBase = with_metaclass(CommandorMetaClass)
 
-class Commandor(Mixin):
+class Commandor(CommandorBase, Mixin):
     """Command manager
     """
     __metaclass__ = CommandorMetaClass
@@ -172,8 +178,8 @@ class Commandor(Mixin):
         """
         try:
             return self.parser.parse_args(args)
-        except SystemExit, e:
-            raise InvalidScriptOption(e)
+        except SystemExit:
+            raise InvalidScriptOption(sys.exc_info()[0])
 
     def run(self, options, args, **kwargs):
         """Execute
@@ -271,7 +277,7 @@ class Commandor(Mixin):
         cls.commands[command.name] = command
 
 
-class Command(Mixin):
+class Command(CommandBase, Mixin):
     """Single console command
 
     :attribute name: command name
@@ -357,7 +363,7 @@ class Command(Mixin):
     def usage(cls):
         """Print command usage
         """
-        return u"Usage: {0} [options] {1}\n".format(
+        return "Usage: {0} [options] {1}\n".format(
             sys.argv[0], ' '.join([x.name for x in cls.tree] + [cls.name]))
 
 
@@ -400,8 +406,8 @@ class Command(Mixin):
         """
         try:
             return self.parser.parse_args(self._args)
-        except SystemExit, e:
-            raise InvalidCommandOption(e)
+        except SystemExit:
+            raise InvalidCommandOption(sys.exc_info()[1])
 
     def process(self):
         """Execute command

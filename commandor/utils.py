@@ -22,7 +22,7 @@ def indent(s, level=4):
     :return: `s` with `level` indentation
     :rtype: string
     """
-    return u" " * level + s
+    return " " * level + s
 
 
 def parse_args(args):

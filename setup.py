@@ -21,9 +21,11 @@ from setuptools import setup
 try:
     readme_content = open(os.path.join(os.path.abspath(
         os.path.dirname(__file__)), "README.rst")).read()
-except Exception, e:
-    print(e)
-    readme_content = __doc__
+except Exception:
+  exc = sys.exc_info()[1]
+  # Current exception is 'exc'
+  print(exc)
+  readme_content = __doc__
 
 VERSION = "0.1.4"
 
@@ -41,9 +43,7 @@ def run_tests():
     return suite()
 
 tests_require = [
-    'nose',
-    'unittest2',
-]
+    'nose']
 
 install_requires = []
 
