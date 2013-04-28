@@ -26,8 +26,8 @@ or `pip`_::
     pip install commandor
 
 
-.. _easy_install: http://peak.telecommunity.com/DevCenter/EasyInstall
-.. _pip: http://pypi.python.org/pypi/pip
+.. _`easy_install`: http://peak.telecommunity.com/DevCenter/EasyInstall
+.. _`pip`: http://pypi.python.org/pypi/pip
 
 
 Contribute
@@ -41,14 +41,9 @@ Contribute
 
 
 
-CONTRIBUTE
-----------
-
-Fork https://github.com/Lispython/commandor/ , create commit and pull request.
-
-
 SEE ALSO
 --------
 
 - `Receptor <http://github.com/Lispython/receptor>`_
+
 .. _`the repository`: https://github.com/Lispython/commandor/

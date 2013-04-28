@@ -189,8 +189,8 @@ class CoreTestCase(BaseTestCase):
 
         commandor = Commandor1(parser, args=commandor_args,
                                options=commandor_options)
-        self.assertEqual(commandor.process(), False)
 
+        self.assertRaises(SystemExit, commandor.process)
 
         commandor_args = []
 
@@ -209,5 +209,4 @@ class CoreTestCase(BaseTestCase):
         commandor = Commandor2(parser, args=commandor_args,
                                options=commandor_options)
 
-        self.assertEqual(commandor.process(), False)
-
+        self.assertRaises(SystemExit, commandor.process)

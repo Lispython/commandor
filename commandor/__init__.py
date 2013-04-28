@@ -11,7 +11,6 @@ Python script options and args parser
 :github: http://github.com/Lispython/commandor
 """
 
-import sys
 
 __all__ = 'VERSION', 'VERSION_INFO',\
           'Commandor', 'Command'
@@ -19,12 +18,12 @@ __all__ = 'VERSION', 'VERSION_INFO',\
 
 __author__ = "Alex Lispython (alex@obout.ru)"
 __license__ = "BSD, see LICENSE for more details"
-__build__ = 0x000012
+__build__ = 0x000014
 __maintainer__ = "Alexandr Lispython (alex@obout.ru)"
 
 try:
     __version__ = __import__('pkg_resources') \
-        .get_distribution('human_curl').version
+        .get_distribution('commandor').version
 except Exception:
     __version__ = 'unknown'
 

@@ -19,6 +19,10 @@ audit:
 release: clean
 	python setup.py sdist upload
 
+release: clean
+	git tag -f v$(version) && git push --tags
+	python setup.py sdist upload
+
 clean-pyc:
 	find . -name '*.pyc' -exec rm -f {} +
 	find . -name '*.pyo' -exec rm -f {} +

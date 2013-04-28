@@ -218,8 +218,9 @@ class Commandor(CommandorBase, Mixin):
 
         res = self.run(self._parsed_options, commands)
 
-        if not res:
-            return res
+        # If need run only commandor without subcommands
+        if res is None:
+            return None
 
         command, command_args = self.__class__.find_command(commands)
 
@@ -377,7 +378,7 @@ class Command(CommandBase, Mixin):
         """
         # Self.Display cls doc
         cls.display(indent("`{0}`: {1}".format(
-            blue(cls.name), cls.help or cls.__doc__.strip()),
+            blue(cls.name), cls.help or (cls.__doc__.strip() if cls.__doc__ else 'No doc')),
                            (cls.level + 1 if base_ident is None else base_ident) * 4))
 
         if cls.commands:
