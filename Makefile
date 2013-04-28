@@ -19,6 +19,8 @@ audit:
 release: clean
 	python setup.py sdist upload
 
+version := $(shell sh -c "grep -oP 'VERSION = \"\K[0-9\.]*?(?=\")' ./setup.py")
+
 release: clean
 	git tag -f v$(version) && git push --tags
 	python setup.py sdist upload
