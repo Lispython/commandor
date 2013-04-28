@@ -4,7 +4,7 @@ test:
 	python setup.py nosetests --stop --tests tests/__init__.py
 
 travis:
-	python setup.py nosetests --tests tests/__init__.py
+	python setup.py test
 
 coverage:
 	python setup.py nosetests  --with-coverage --cover-package=commandor --cover-html --cover-html-dir=coverage_out coverage
